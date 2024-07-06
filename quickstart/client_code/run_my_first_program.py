@@ -67,5 +67,3 @@ def nada_main():
         Output(encrypted_message, "encrypted_message", party1),
         Output(decrypted_message, "decrypted_message", party1)
     ]
-
-# Note: Ensure that the program handles the encryption and decryption correctly.
