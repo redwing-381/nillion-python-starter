@@ -1,76 +1,58 @@
+# Import the necessary libraries
 from nada_dsl import *
-
-def gcd(a, b):
-    while b != 0:
-        a, b = b, a % b
-    return a
-
-def mod_inverse(a, m):
-    m0, y, x = m, 0, 1
-    while a > 1:
-        q = a // m
-        m, a = a % m, m
-        y, x = x - q * y, y
-    return x + m0 if x < 0 else x
-
-def rsa_encrypt(message, n, e):
-    return message**e % n
-
-def rsa_decrypt(ciphertext, n, d):
-    return ciphertext**d % n
+import matplotlib.pyplot as plt
 
 def nada_main():
-    party1 = Party(name="Party1")
-    p = SecretInteger(Input(name="p", party=party1))
-    q = SecretInteger(Input(name="q", party=party1))
-    message = SecretInteger(Input(name="message", party=party1))
+    display_string = "NILLION X HHGOA"
+    num_chars = len(display_string)
+    
+    # Define a party for each character in the string
+    parties = [Party(name=f"Party{i+1}") for i in range(num_chars)]
+    
+    # Define secret inputs for character positions (x, y) and ASCII values
+    outputs = []
+    for i in range(num_chars):
+        x_pos = SecretInteger(Input(name=f"x_pos_{i}", party=parties[i]))
+        y_pos = SecretInteger(Input(name=f"y_pos_{i}", party=parties[i]))
+        ascii_val = SecretInteger(Input(name=f"ascii_val_{i}", party=parties[i]))
 
-    # Step 1: Calculate n
-    n = p * q
+        # Append outputs
+        outputs.append(Output(x_pos, f"x_pos_output_{i}", parties[i]))
+        outputs.append(Output(y_pos, f"y_pos_output_{i}", parties[i]))
+        outputs.append(Output(ascii_val, f"ascii_val_output_{i}", parties[i]))
+    
+    return outputs
 
-    # Step 2: Calculate Euler's Totient function φ(n)
-    phi_n = (p - 1) * (q - 1)
+# Simulated NADA execution environment
+def run_nada_program():
+    display_string = "NILLION X HHGOA"
+    num_chars = len(display_string)
+    
+    # Simulate positions and ASCII values for visualization
+    positions = [(i, 0) for i in range(num_chars)]
+    ascii_values = [ord(c) for c in display_string]
+    
+    return positions, ascii_values
 
-    # Step 3: Choose e such that 1 < e < φ(n) and gcd(e, φ(n)) = 1
-    e = 3
-    while gcd(e, phi_n) != 1:
-        e += 2
+# Running the NADA program to get positions and ASCII values
+positions, ascii_values = run_nada_program()
 
-    # Step 4: Calculate d such that d * e ≡ 1 (mod φ(n))
-    d = mod_inverse(e, phi_n)
+# Visualization part using matplotlib
 
-    # Encrypt the message
-    encrypted_message = rsa_encrypt(message, n, e)
+# Convert ASCII values to characters
+characters = [chr(ascii_val) for ascii_val in ascii_values]
 
-    # Decrypt the message
-    decrypted_message = rsa_decrypt(encrypted_message, n, d)
+# Plotting the characters
+fig, ax = plt.subplots()
+for (x, y), char in zip(positions, characters):
+    ax.text(x, y, char, fontsize=18, ha='center', va='center')
 
-    # Return the encrypted and decrypted message as outputs
-    return [
-        Output(encrypted_message, "encrypted_message", party1),
-        Output(decrypted_message, "decrypted_message", party1)
-    ]
+ax.set_xlim(-1, len(characters))
+ax.set_ylim(-1, 1)
+ax.axis('off')
 
-# Example input and expected output
-if __name__ == "__main__":
-    p = 61
-    q = 53
-    message = 65
+# Save the plot to a file
+plt.savefig("/content/nillion-python-starter/quickstart/client_code/nillion_x_hh_goa.png")
 
-    # Example output using non-secret values
-    n = p * q
-    phi_n = (p - 1) * (q - 1)
-    e = 3
-    while gcd(e, phi_n) != 1:
-        e += 2
-    d = mod_inverse(e, phi_n)
-
-    # Encrypt and decrypt the message
-    encrypted_message = rsa_encrypt(message, n, e)
-    decrypted_message = rsa_decrypt(encrypted_message, n, d)
-
-    print("Public Key (n, e):", (n, e))
-    print("Private Key (n, d):", (n, d))
-    print("Original Message:", message)
-    print("Encrypted Message:", encrypted_message)
-    print("Decrypted Message:", decrypted_message)
+# Display the plot
+plt.show()
